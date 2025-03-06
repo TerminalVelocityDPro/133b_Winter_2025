@@ -15,6 +15,7 @@ from math               import pi, sin, cos, atan2, sqrt, ceil, dist
 from scipy.spatial      import KDTree
 from shapely.geometry   import Point, LineString, Polygon, MultiPolygon
 from shapely.prepared   import prep
+from shapely.plotting   import plot_polygon
 
 
 ######################################################################
@@ -29,6 +30,9 @@ DSTEP = 0.25
 SMAX = 50000
 NMAX = 1500
 
+# TOTAL NUM OF TICKS
+TICK_NUM = 24
+
 
 ######################################################################
 #
@@ -39,12 +43,26 @@ NMAX = 1500
 (xmin, xmax) = (0, 10)
 (ymin, ymax) = (0, 12)
 
+# TRIANGLE DEFINITION
+# first pair is first vertex
+# second, third, so on...
+# fourth = first
+triangle1 = Polygon([[6, 3], [2,  3], [2, 4], [6, 3]])  
+triangle2 = Polygon([[4, 5], [6,  6], [4, 7], [4, 5]])
+triangle3 = Polygon([[8, 4], [8,  7], [6, 5], [8, 4]])
+triangle4 = Polygon([[2, 9], [5, 10], [5, 8], [2, 9]])
+triangle5 = Polygon([[0, 12], [4, 11], [2, 10], [0, 12]])
+
+
 # Collect all the triangle and prepare (for faster checking).
 triangles = prep(MultiPolygon([
-    Polygon([[6, 3], [2,  3], [2, 4], [6, 3]]),
-    Polygon([[4, 5], [6,  6], [4, 7], [4, 5]]),
-    Polygon([[8, 4], [8,  7], [6, 5], [8, 4]]),
-    Polygon([[2, 9], [5, 10], [5, 8], [2, 9]])]))
+    triangle1,
+    triangle2,
+    triangle3,
+    triangle4,
+    triangle5]))
+
+triangle_list = [triangle1, triangle2, triangle3, triangle4, triangle5]
 
 # Define the start/goal states (x, y, theta)
 (xstart, ystart) = (5, 1)
@@ -60,6 +78,7 @@ class Visualization:
     def __init__(self):
         self.tick = 0
         self.show_triangle_tick = 0
+        self.used_triangles = [False for n in range(len(triangle_list))]
         # Clear the current, or create a new figure.
         plt.clf()
 
@@ -89,6 +108,30 @@ class Visualization:
         for poly in triangles.context.geoms:
             plt.plot(*poly.exterior.xy, 'k-', linewidth=2)
 
+    def drawTriangle(self):
+        current_selection = -1
+        current_status = False
+
+        ## CHECKING IF ALL HAVE BEEN USED BEFORE
+        all_used = True 
+        for i in range(len(triangle_list)):
+            if not self.used_triangles[i]:
+                all_used = False
+
+        if not all_used:
+            while current_selection == -1 or not current_status:
+                current_selection = random.randint(0, len(self.used_triangles) - 1)
+                print("the current selection is")
+                print(current_selection)
+                print(self.used_triangles)
+                print(self.used_triangles[current_selection])
+                if self.used_triangles[current_selection] is False:
+                    break
+
+
+            plot_polygon(triangle_list[current_selection])
+            self.used_triangles[current_selection] = True
+
     def drawNode(self, node, *args, **kwargs):
         plt.plot(node.x, node.y, *args, **kwargs)
 
@@ -104,10 +147,10 @@ class Visualization:
         input("TICK ")
         print(self.tick)
         self.tick+=1
-        if self.tick == self.show_triangle_tick:
+        if self.tick % self.show_triangle_tick == 0:
             print("HIT")
             print(self.tick)
-            self.drawTriangles()
+            self.drawTriangle()
 
     def set_triangle_visibility_tick(self, tick_val):
         self.show_triangle_tick = tick_val
@@ -284,18 +327,12 @@ def main():
     visual.drawNode(goalnode,  color='purple', marker='o')
     visual.show("end")
 
+    # PERIODIC SHOWING OF MORE TRIANGLES
     visual.set_triangle_visibility_tick(4)
-    visual.tick_enter()
-    visual.show()
-    visual.tick_enter()
-    visual.show()
-    visual.tick_enter()
-    visual.show()
-    visual.tick_enter()
-    visual.show()
-    visual.tick_enter()
-    visual.show()
-
+    # TOTAL NUMBER OF TICKS
+    for i in range(TICK_NUM):
+        visual.tick_enter()
+        visual.show()
     visual.show("end")
 
     
