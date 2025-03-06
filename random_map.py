@@ -58,6 +58,8 @@ triangles = prep(MultiPolygon([
 # Visualization Class
 class Visualization:
     def __init__(self):
+        self.tick = 0
+        self.show_triangle_tick = 0
         # Clear the current, or create a new figure.
         plt.clf()
 
@@ -70,8 +72,8 @@ class Visualization:
         plt.gca().set_aspect('equal')
 
         # Show the triangles.
-        for poly in triangles.context.geoms:
-            plt.plot(*poly.exterior.xy, 'k-', linewidth=2)
+        # for poly in triangles.context.geoms:
+        #     plt.plot(*poly.exterior.xy, 'k-', linewidth=2)
 
         # Show.
         self.show()
@@ -82,6 +84,10 @@ class Visualization:
         # If text is specified, print and wait for confirmation.
         if len(text)>0:
             input(text + ' (hit return to continue)')
+    
+    def drawTriangles(self):
+        for poly in triangles.context.geoms:
+            plt.plot(*poly.exterior.xy, 'k-', linewidth=2)
 
     def drawNode(self, node, *args, **kwargs):
         plt.plot(node.x, node.y, *args, **kwargs)
@@ -93,6 +99,19 @@ class Visualization:
     def drawPath(self, path, *args, **kwargs):
         for i in range(len(path)-1):
             self.drawEdge(path[i], path[i+1], *args, **kwargs)
+
+    def tick_enter(self):
+        input("TICK ")
+        print(self.tick)
+        self.tick+=1
+        if self.tick == self.show_triangle_tick:
+            print("HIT")
+            print(self.tick)
+            self.drawTriangles()
+
+    def set_triangle_visibility_tick(self, tick_val):
+        self.show_triangle_tick = tick_val
+
 
 
 ######################################################################
@@ -236,6 +255,7 @@ def main():
     # Create the figure.
     visual = Visualization()
 
+
     xstart = -1
     ystart = -1
     xgoal = -1
@@ -262,7 +282,23 @@ def main():
     # # Show the start/goal nodes.
     visual.drawNode(startnode, color='orange', marker='o')
     visual.drawNode(goalnode,  color='purple', marker='o')
-    visual.show("Showing basic world")
+    visual.show("end")
+
+    visual.set_triangle_visibility_tick(4)
+    visual.tick_enter()
+    visual.show()
+    visual.tick_enter()
+    visual.show()
+    visual.tick_enter()
+    visual.show()
+    visual.tick_enter()
+    visual.show()
+    visual.tick_enter()
+    visual.show()
+
+    visual.show("end")
+
+    
 
 
     # # Run the RRT planner.
