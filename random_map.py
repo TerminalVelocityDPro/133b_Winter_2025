@@ -62,6 +62,9 @@ triangles = prep(MultiPolygon([
     triangle4,
     triangle5]))
 
+current_triangles = []
+current_triangles_polygon = None
+
 triangle_list = [triangle1, triangle2, triangle3, triangle4, triangle5]
 
 # Define the start/goal states (x, y, theta)
@@ -128,9 +131,10 @@ class Visualization:
                 if self.used_triangles[current_selection] is False:
                     break
 
-
             plot_polygon(triangle_list[current_selection])
             self.used_triangles[current_selection] = True
+            current_triangles.append(triangle_list[current_selection])
+            current_triangles_polygon = prep(MultiPolygon(current_triangles))
 
     def drawNode(self, node, *args, **kwargs):
         plt.plot(node.x, node.y, *args, **kwargs)
@@ -197,7 +201,11 @@ class Node:
         if (self.x <= xmin or self.x >= xmax or
             self.y <= ymin or self.y >= ymax):
             return False
-        return triangles.disjoint(Point(self.coordinates()))
+        if current_triangles_polygon is None:
+            return True
+        print(current_triangles)
+        return current_triangles_polygon.disjoint(Point(self.coordinates()))
+        
 
     # Check the local planner - whether this connects to another node.
     def connectsTo(self, other):
@@ -261,10 +269,10 @@ def rrt(startnode, goalnode, visual):
 
         # Check whether we should abort - too many steps or nodes.
         steps += 1
-        if (steps >= SMAX) or (len(tree) >= NMAX):
-            print("Aborted after %d steps and the tree having %d nodes" %
-                  (steps, len(tree)))
-            return None
+        # if (steps >= SMAX) or (len(tree) >= NMAX):
+        #     print("Aborted after %d steps and the tree having %d nodes" %
+        #           (steps, len(tree)))
+        #     return None
 
     # Build the path.
     path = [goalnode]
@@ -274,6 +282,9 @@ def rrt(startnode, goalnode, visual):
     # Report and return.
     print("Finished after %d steps and the tree having %d nodes" %
           (steps, len(tree)))
+
+    tree = []
+    steps = 0
     return path
 
 
@@ -332,11 +343,14 @@ def main():
     # TOTAL NUMBER OF TICKS
     for i in range(TICK_NUM):
         visual.tick_enter()
+        path = rrt(startnode, goalnode, visual)
+        if not path:
+            return
+        # visual.drawPath(path, color='r', linewidth=2)
+        PostProcess(path)
+        visual.drawPath(path, color='b', linewidth=2)
         visual.show()
     visual.show("end")
-
-    
-
 
     # # Run the RRT planner.
     # print("Running RRT...")
