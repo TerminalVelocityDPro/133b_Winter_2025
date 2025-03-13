@@ -56,66 +56,74 @@ class Node:
 #   node graph, transfering nodes from air (not seen) to leaf (seen,
 #   but not done) to trunk (done).
 #
-# Run the planner.
-def computePath(current, goal):
-    # Use the goal node to initialize the on-deck queue *note D* Lite starts
-    # at the goal instead of the start node
-    goal.seen = True
-    goal.cost = 0
-    goal.cost2Reach = 0
-    goal.child = None
-    goal.parent = None
-    onDeck = [goal]
 
-    # Continually expand/build the search tree.
-    print("Starting the processing...")
-    while True:
-        # Check that priority queue isn't empty
-        if not (len(onDeck) > 0):
-            return None
-
-        # Grab the next state (first on the storted on-deck list).
-        node = onDeck.pop(0)
-
-        ####################
+class Planner:
+    def __init__(self, current, goal):
+        self.path = []
+        self.current = current
+        self.goal = goal
         
-        # stop search if path to start is found
-        if node == current:
-            break
+    # Run the planner.
+    def computePath(self):
+        # Use the goal node to initialize the on-deck queue *note D* Lite starts
+        # at the goal instead of the start node
+        self.goal.seen = True
+        self.goal.cost = 0
+        self.goal.cost2Reach = 0
+        self.goal.child = None
+        self.goal.parent = None
+        onDeck = [self.goal]
+
+        # Continually expand/build the search tree.
+        print("Starting the processing...")
+        while True:
+            # Check that priority queue isn't empty
+            if not (len(onDeck) > 0):
+                return None
+
+            # Grab the next state (first on the storted on-deck list).
+            node = onDeck.pop(0)
+
+            ####################
+            
+            # stop search if path to start is found
+            if node == self.current:
+                break
+            
+            for neighbor in node.neighbors:
+                # check that neighbor has not already been done
+                if not neighbor.done:
+                    # compute cost to get to neighbor from current node
+                    tempcost2Reach = node.cost2Reach + 1
+                    # compute estimated cost to reach goal from current node
+                    cost2Go = neighbor.distance(self.goal)
+                    # and create estimated total cost
+                    totalCost = tempcost2Reach + cost2Go
+                    # check if this is the optimal cost and update accordingly
+                    if totalCost < neighbor.cost:
+                        neighbor.cost2Reach = tempcost2Reach
+                        neighbor.cost = totalCost
+                        # update parent and child for finding path later
+                        neighbor.child = node
+                        node.parent = neighbor
+                        # make sure to update the neighbor within onDeck
+                        if neighbor.seen:
+                            onDeck.remove(neighbor)
+                        # or, mark the neighbor as seen for the first time
+                        else:
+                            neighbor.seen = True
+                        # lastly, insert the neighbor into the list
+                        bisect.insort(onDeck,neighbor)
+            # mark node as done to avoid repeats
+            node.done = True
         
-        for neighbor in node.neighbors:
-            # check that neighbor has not already been done
-            if not neighbor.done:
-                # compute cost to get to neighbor from current node
-                tempcost2Reach = node.cost2Reach + 1
-                # compute estimated cost to reach goal from current node
-                cost2Go = neighbor.distance(goal)
-                # and create estimated total cost
-                totalCost = tempcost2Reach + cost2Go
-                # check if this is the optimal cost and update accordingly
-                if totalCost < neighbor.cost:
-                    neighbor.cost2Reach = tempcost2Reach
-                    neighbor.cost = totalCost
-                    # update parent and child for finding path later
-                    neighbor.child = node
-                    node.parent = neighbor
-                    # make sure to update the neighbor within onDeck
-                    if neighbor.seen:
-                        onDeck.remove(neighbor)
-                    # or, mark the neighbor as seen for the first time
-                    else:
-                        neighbor.seen = True
-                    # lastly, insert the neighbor into the list
-                    bisect.insort(onDeck,neighbor)
-        # mark node as done to avoid repeats
-        node.done = True
-    
-    # now, construct path to return by working backwards from the goal
-    path = []
-    brick = goal
-    while True:
-        bisect.insort(path, brick)
-        if brick.parent:
-            brick = brick.parent
-        else:
-            return path
+        # now, construct path to return by working backwards from the goal
+        brick = self.goal
+        # clear old path from planner
+        self.path = []
+        while True:
+            bisect.insort(self.path, brick)
+            if brick.parent:
+                brick = brick.parent
+            else:
+                return self.path

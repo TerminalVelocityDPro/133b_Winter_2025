@@ -10,7 +10,7 @@ import numpy as np
 import sys
 
 from hw5_utilities import Visualization, Robot
-import dstar
+from dstar import Node, Planner
 
 
 #
@@ -175,8 +175,16 @@ def main():
     # Initialize the figure.
     visual = Visualization(walls, robot, obstacles)
     input("The empty grid")
+    
+    nodes  = []
+    for row in range(rows):
+        for col in range(cols):
+            # Create a node per space, except only color walls black.
+            if w[row][col] != '#':
+                nodes.append(Node(row, col))
 
     # Pre-compute the probability grids for each sensor reading.
+    
 
     # Start with a uniform belief grid.
     bel = (1.0 - walls) / np.sum(1.0 - walls)
