@@ -10,6 +10,7 @@ import numpy as np
 import sys
 
 from hw5_utilities import Visualization, Robot
+import dstar
 
 
 #
