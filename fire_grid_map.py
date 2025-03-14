@@ -10,6 +10,7 @@ import numpy as np
 import sys
 
 from hw5_utilities import Visualization, Robot
+import random
 from dstar import Node, Planner
 
 
@@ -43,29 +44,22 @@ w = ['xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
      'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx']
 
 walls = np.array([[1.0*(c == 'x') for c in s] for s in w])
-print(walls)
-obstacles = [[(10,10),
-              (10,11),
-              (11,11),
-              (11,10),
-              (11,12),
-              (12,10),
-              (12,9),
-              (12,11),
-              (13,9),
-              (12,8)],
-             [(17,15),
-              (17,16),
-              (17,17),
-              (17,18),
-              (17,14),
-              (16,15),
-              (16,16),
-              (16,17),
-              (16,18)]]
+# print(walls)
 
 rows  = np.size(walls, axis=0)
 cols  = np.size(walls, axis=1)
+
+obstacles = []
+for i in range(30):
+    obstacles.append([random.randint(1, rows - 1), random.randint(1, cols - 1)])
+
+print("THIS HERE IS AN OBSTACLE")
+print(obstacles)
+
+goal_mark = [random.randint(1, rows - 1), random.randint(1, cols - 1)]
+while goal_mark in obstacles:
+    goal_mark = [random.randint(1, rows - 1), random.randint(1, cols - 1)]
+
 
 #
 #  Prediction
@@ -176,7 +170,7 @@ def main():
         robot=Robot(walls, pSensor=[0.9,0.6,0.3], pCommand=0.8)
 
     # Initialize the figure.
-    visual = Visualization(walls, robot, obstacles)
+    visual = Visualization(walls, robot, obstacles, goal_mark)
     input("The empty grid")
     
     nodes  = []
@@ -185,9 +179,9 @@ def main():
             # Create a node per space, except only color walls black.
             if w[row][col] != '#':
                 nodes.append(Node(row, col))
-    # get starting position
+    # # get starting position
     start = computeCurrentNode(robot,nodes)
-    # and find nearest fire to set as goal node
+    # # and find nearest fire to set as goal node
     fire_distance = np.inf
     for node in nodes:
         if node.type == 'fire':

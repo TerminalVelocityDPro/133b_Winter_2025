@@ -48,12 +48,13 @@ import random
 #   Probailiity Grid Visualization
 #
 class Visualization():
-    def __init__(self, walls, robot, obstacles):
+    def __init__(self, walls, robot, obstacles, goal):
         # Save the walls, robot, and determine the rows/cols:
         self.walls = walls
-        self.fire = np.zeros_like(walls) 
+        self.fire = np.zeros(np.shape(walls)) 
         self.robot = robot
         self.obstacles = obstacles
+        self.goal = goal
         self.tick_counter = 0
         self.obstacle_appearance_rate = 2
         self.spots = np.sum(np.logical_not(walls))
@@ -129,7 +130,7 @@ class Visualization():
                                         zorder=1)
 
     def Grid(self, prob):
-        print(self.tick_counter)
+        # print(self.tick_counter)
         self.tick_counter+=1
         # Check the probability grid array size.
         if prob is not None:
@@ -141,26 +142,27 @@ class Visualization():
             self.content.remove()
             self.content = None
 
-        if self.tick_counter % self.obstacle_appearance_rate == 0:
-            for obstacle in self.obstacles:
-                print(obstacle)
-                length_parse = int(self.tick_counter / self.obstacle_appearance_rate)
-                for point_index in range(length_parse):
-                    if point_index < len(obstacle):
-                        print(point_index)
-                        print(obstacle[point_index])
-                        row = obstacle[point_index][0]
-                        col = obstacle[point_index][1]
-                        self.fire[row, col] = 1.0
 
+        for obstacle in self.obstacles:
+            # print(obstacle)
+            # print(point_index)
+            # print(obstacle[point_index])
+            row = obstacle[0]
+            col = obstacle[1]
+            self.walls[row, col] = 1.0
+
+        row = self.goal[0]
+        col = self.goal[1]
+        self.fire[row, col] = 1.0
+        
         # Create the color range.  There are clearly more elegant ways...
         color = np.ones((self.rows, self.cols, 3))
         for row in range(self.rows):
             for col in range(self.cols):
                 if self.walls[row,col]:
                     color[row,col,0:3] = np.array([0.0, 0.0, 0.0])   # Black
-                if self.fire[row, col]:
-                    color[row, col, 0:3] = np.array([1.0, 0.0, 0.0])
+                if self.fire[row,col] and not self.walls[row, col]:
+                    color[row,col,0:3] = np.array([1.0, 0.0, 0.0])
     
         # Draw the boxes.
         self.content = plt.gca().imshow(color,
