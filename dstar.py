@@ -2,7 +2,7 @@
 import numpy as np
 import math
 import bisect
-from math import inf
+from numpy import inf
     
 class Node:
     # Initialization
@@ -10,6 +10,8 @@ class Node:
         # Save the matching state.
         self.row = row
         self.col = col
+        # initialize all nodes as clear
+        self.type = 'clear' # other options are 'fire' and 'obstacle'
 
         # Clear the list of neighbors (used for the full graph).
         self.neighbors = []
@@ -58,6 +60,7 @@ class Node:
 #
 
 class Planner:
+    
     def __init__(self, current, goal):
         self.path = []
         self.current = current

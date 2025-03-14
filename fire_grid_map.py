@@ -152,6 +152,11 @@ def precomputeSensorProbability(drow, dcol, pSenDist = [1.0]):
     return prob
 
 
+def computeCurrentNode(robot,nodes):
+    for node in nodes:
+        if node.row == robot.row and node.col == robot.col:
+            current = node
+            return current
 # 
 #
 #  Main Code
@@ -170,8 +175,6 @@ def main():
     elif part == 'play':
         robot=Robot(walls, pSensor=[0.9,0.6,0.3], pCommand=0.8)
 
-
-
     # Initialize the figure.
     visual = Visualization(walls, robot, obstacles)
     input("The empty grid")
@@ -182,9 +185,21 @@ def main():
             # Create a node per space, except only color walls black.
             if w[row][col] != '#':
                 nodes.append(Node(row, col))
-
-    # Pre-compute the probability grids for each sensor reading.
+    # get starting position
+    start = computeCurrentNode(robot,nodes)
+    # and find nearest fire to set as goal node
+    fire_distance = np.inf
+    for node in nodes:
+        if node.type == 'fire':
+            temp_dist = node.distance(start)
+            if temp_dist < fire_distance:
+                fire_distance = temp_dist
+                goal = node
     
+    planner = Planner(start, goal)
+    
+    # compute initial path, with no knowledge of fires or obstacles
+    path = planner.computePath()
 
     # Start with a uniform belief grid.
     bel = (1.0 - walls) / np.sum(1.0 - walls)
@@ -195,16 +210,27 @@ def main():
         visual.Show(np.ones(np.shape(walls)), markRobot=True)
 
         # Get the command key to determine the direction.
-        while True:
-            key = input("Cmd (q=quit, i=up, m=down, j=left, k=right) ?")
-            if   (key == 'q'):  return
-            elif (key == 'i'):  (drow, dcol) = (-1,  0) ; break
-            elif (key == 'm'):  (drow, dcol) = ( 1,  0) ; break
-            elif (key == 'j'):  (drow, dcol) = ( 0, -1) ; break
-            elif (key == 'k'):  (drow, dcol) = ( 0,  1) ; break
+        # while True:
+        #    key = input("Cmd (q=quit, i=up, m=down, j=left, k=right) ?")
+        #    if   (key == 'q'):  return
+        #    elif (key == 'i'):  (drow, dcol) = (-1,  0) ; break
+        #    elif (key == 'm'):  (drow, dcol) = ( 1,  0) ; break
+        #    elif (key == 'j'):  (drow, dcol) = ( 0, -1) ; break
+        #    elif (key == 'k'):  (drow, dcol) = ( 0,  1) ; break
+
+        # check for obstacle
+        while path[0].type == 'obstacle':
+            path[0].type = np.inf
+            path = planner.computePath()
+        
+        # and get next move
+        next_node = path.pop(0)
+        drow = next_node.row - planner.current.row
+        dcol = next_node.col - planner.current.col
 
         # Move the robot in the simulation.
         robot.Command(drow, dcol)
+        planner.current = computeCurrentNode(robot,nodes)
 
 if __name__== "__main__":
     main()
