@@ -151,6 +151,13 @@ def computeCurrentNode(robot,nodes):
         if node.row == robot.row and node.col == robot.col:
             current = node
             return current
+        
+def setObstacleNodes(obstacles,nodes):
+    for node in nodes:
+        for obstacle in obstacles:
+            if node.row == obstacle[0] and node.col == obstacles[1]:
+                node.type = 'obstacle'
+
 # 
 #
 #  Main Code
@@ -184,13 +191,19 @@ def main():
     # # and find nearest fire to set as goal node
     fire_distance = np.inf
     for node in nodes:
+        if node.row == goal_mark[0] and node.col == goal_mark[1]:
+            node.type == 'fire'
         if node.type == 'fire':
+            print('set fire successfully!')
             temp_dist = node.distance(start)
             if temp_dist < fire_distance:
                 fire_distance = temp_dist
                 goal = node
     
+    setObstacleNodes(obstacles,nodes)
+    
     planner = Planner(start, goal)
+    
     
     # compute initial path, with no knowledge of fires or obstacles
     path = planner.computePath()
