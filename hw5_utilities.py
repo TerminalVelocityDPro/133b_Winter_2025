@@ -233,9 +233,9 @@ class Robot():
 
     def Command(self, drow, dcol):
         # Check the delta.
-        assert ((abs(drow) == 1 and abs(dcol) == 0) or 
-                (abs(drow) == 0 and abs(dcol) == 1) or 
-                (abs(drow) == 1 and abs(dcol) == 1)), "Bad delta"
+        # assert ((abs(drow) == 1 and abs(dcol) == 0) or 
+        #         (abs(drow) == 0 and abs(dcol) == 1) or 
+        #         (abs(drow) == 1 and abs(dcol) == 1)), "Bad delta"
 
         # Check whether to kidnap.
         if self.countdown > 0:

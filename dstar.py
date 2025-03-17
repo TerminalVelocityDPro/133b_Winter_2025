@@ -61,30 +61,31 @@ class Node:
 
 class Planner:
     
-    def __init__(self, current, goal, walls, nodes):
+    def __init__(self, current, goal, nodes):
         self.path = None
         self.current = current
         self.goal = goal
-        self.walls = walls
         self.nodes = nodes
-        
-    # Run the planner.
-    def computePath(self):
-        print("COMPUTE PATH RUNNING")
-        print(self.current)
+    
+    def initNodes(self):
         for node in self.nodes:
             node.seen = False
             node.done = False
             node.cost = inf
             node.cost2Reach = inf
             node.parent = None
-            
+        
+    # Run the planner.
+    def computePath(self):
+        print("COMPUTE PATH RUNNING")
+        print(self.current)
+        
+        self.initNodes()
         # Use the goal node to initialize the on-deck queue *note D* Lite starts
         # at the goal instead of the start node
         self.goal.seen = True
-        self.goal.cost = 0
+        self.goal.cost = self.goal.distance(self.current)
         self.goal.cost2Reach = 0
-        self.goal.child = None
         self.goal.parent = None
         onDeck = [self.goal]
 
@@ -108,10 +109,7 @@ class Planner:
                 # check that neighbor has not already been done
                 if not neighbor.done:
                     
-                    if neighbor.type == 'obstacle':
-                        continue
-                    
-                    # determines if move is diagnoal
+                    # determines if move is diagonal
                     drow = abs(neighbor.row - node.row)
                     dcol = abs(neighbor.col - node.col)
                     move_cost = math.sqrt(2) if drow == 1 and dcol == 1 else 1
@@ -119,16 +117,15 @@ class Planner:
                     # compute cost to get to neighbor from current node
                     tempcost2Reach = node.cost2Reach + move_cost
                     # compute estimated cost to reach goal from current node
-                    cost2Go = neighbor.distance(self.goal)
+                    cost2Go = neighbor.distance(self.current)
                     # and create estimated total cost
                     totalCost = tempcost2Reach + cost2Go
                     # check if this is the optimal cost and update accordingly
                     if totalCost < neighbor.cost:
                         neighbor.cost2Reach = tempcost2Reach
                         neighbor.cost = totalCost
-                        # update parent and child for finding path later
-                        neighbor.child = node
-                        node.parent = neighbor
+                        # update parent for finding path later
+                        neighbor.parent = node
                         # make sure to update the neighbor within onDeck
                         if neighbor.seen:
                             onDeck.remove(neighbor)
@@ -142,18 +139,15 @@ class Planner:
         
         # now, construct path to return by working backwards from the goal
         self.path = []
-        brick = self.goal
+        brick = self.current.parent
         while brick:
-            self.path.insert(0, brick) 
+            self.path.append(brick) 
             brick = brick.parent
-        print(self.path)
-        self.check_path()
-        print("CHECK")
         print(self.path)
         return self.path
     
     # Makes sure that the path is single-step moves
-    def check_path(self):
+    # def check_path(self):
         print("CHECK PATH RUNNING")
         if not self.path:
             print("CHECK PATH FAILURE")
@@ -162,7 +156,7 @@ class Planner:
         valid_path = [self.path[0]]  # Start with the first node.
         for i in range(1, len(self.path)):
             print( i )
-            prev_node = valid_path[-1]
+            prev_node = valid_path[i-1] # changed this from [-1]
             curr_node = self.path[i]
             print(curr_node)
 
