@@ -61,13 +61,22 @@ class Node:
 
 class Planner:
     
-    def __init__(self, current, goal):
+    def __init__(self, current, goal, walls, nodes):
         self.path = []
         self.current = current
         self.goal = goal
+        self.walls = walls
+        self.nodes = nodes
         
     # Run the planner.
     def computePath(self):
+        for node in self.nodes:
+            node.seen = False
+            node.done = False
+            node.cost = inf
+            node.cost2Reach = inf
+            node.parent = None
+            
         # Use the goal node to initialize the on-deck queue *note D* Lite starts
         # at the goal instead of the start node
         self.goal.seen = True
@@ -81,7 +90,7 @@ class Planner:
         print("Starting the processing...")
         while True:
             # Check that priority queue isn't empty
-            if not (len(onDeck) > 0):
+            if not onDeck:
                 return None
 
             # Grab the next state (first on the storted on-deck list).
@@ -96,8 +105,17 @@ class Planner:
             for neighbor in node.neighbors:
                 # check that neighbor has not already been done
                 if not neighbor.done:
+                    
+                    if neighbor.type == 'obstacle':
+                        continue
+                    
+                    # determines if move is diagnoal
+                    drow = abs(neighbor.row - node.row)
+                    dcol = abs(neighbor.col - node.col)
+                    move_cost = math.sqrt(2) if drow == 1 and dcol == 1 else 1
+                    
                     # compute cost to get to neighbor from current node
-                    tempcost2Reach = node.cost2Reach + 1
+                    tempcost2Reach = node.cost2Reach + move_cost
                     # compute estimated cost to reach goal from current node
                     cost2Go = neighbor.distance(self.goal)
                     # and create estimated total cost
@@ -121,12 +139,41 @@ class Planner:
             node.done = True
         
         # now, construct path to return by working backwards from the goal
-        brick = self.goal
-        # clear old path from planner
         self.path = []
-        while True:
-            bisect.insort(self.path, brick)
-            if brick.parent:
-                brick = brick.parent
-            else:
-                return self.path
+        brick = self.goal
+        while brick:
+            self.path.insert(0, brick) 
+            brick = brick.parent
+        self.check_path()
+        return self.path
+    
+    # Makes sure that the path is single-step moves
+    def check_path(self):
+        if not self.path:
+            return
+
+        valid_path = [self.path[0]]  # Start with the first node.
+        for i in range(1, len(self.path)):
+            prev_node = valid_path[-1]
+            curr_node = self.path[i]
+
+            # Compute the delta between the current and previous node.
+            drow = curr_node.row - prev_node.row
+            dcol = curr_node.col - prev_node.col
+
+            # Ensure the move is a single-step move.
+            steps = max(abs(drow), abs(dcol))  # Number of intermediate steps needed.
+            for step in range(1, steps + 1):
+                int_row = prev_node.row + (step * (1 if drow > 0 else -1 if drow < 0 else 0))
+                int_col = prev_node.col + (step * (1 if dcol > 0 else -1 if dcol < 0 else 0))
+
+                # Ensure the intermediate node is valid (not a wall or obstacle).
+                if not self.walls[int_row, int_col]:
+                    intermediate_node = Node(int_row, int_col)
+                    valid_path.append(intermediate_node)
+
+            # Add the current node after all intermediate nodes.
+            valid_path.append(curr_node)
+
+        # Update the path to the valid path.
+        self.path = valid_path
