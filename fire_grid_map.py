@@ -62,91 +62,7 @@ goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 while goal_mark in obstacles or walls[goal_mark[0], goal_mark[1]] == 1:
     goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 
-
-#
-#  Prediction
-#
-#    bel         Grid of probabilities (current belief)
-#    drow, dcol  Delta in row/col
-#    pCmdUsed    Modeled probability of command executing
-#    prd         Grid of probabilities (prediction)
-#
-def computePrediction(bel, drow, dcol, pCmdUsed = 1, kidnap = False):
-    # Prepare an empty prediction grid.
-    prd = np.zeros((rows,cols))
-
-    # Iterate over/determine where "a belief will go".
-    for row in range(1, rows-1):
-        for col in range(1, cols-1):
-            # Try to shift by the given delta.
-            if not walls[row+drow, col+dcol]:
-                # If the move is legal, shift the belief over.
-                prd[row+drow, col+dcol] +=        pCmdUsed  * bel[row, col]
-                prd[row,      col]      += (1.0 - pCmdUsed) * bel[row, col]
-            else:
-                # If the move is illegal, keep the belief where it is.
-                prd[row,      col]      +=                   bel[row, col]
-
-    # If we allow kidnapping, add a small probability (say 1%) everywhere.
-    if kidnap:
-        uniform = (1.0 - walls) / np.sum(1.0 - walls)
-        prd = 0.99 * prd + 0.01 * uniform
-
-    # Return the prediction grid
-    return prd
-
-
-#
-#  Measurement Update (Correction)
-#
-#    prior       Grid of prior probabilities (belief)
-#    probSensor  Grid of probabilities that (sensor==True)
-#    sensor      Value of sensor
-#    post        Grid of posterior probabilities (updated belief)
-#
-def updateBelief(prior, probSensor, sensor):
-    # Update the prior probability based on the sensor reading, which
-    # can be one of two cases: (sensor==True) or (sensor==False)
-    if (sensor):
-        # Use the probability of the sensor reading True.
-        post = prior * probSensor
-    else:
-        # Use the probability of the sensor reading False.
-        post = prior * (1.0 - probSensor)
-
-    # Normalize.
-    s = np.sum(post)
-    if (s == 0.0):
-        print("LOST ALL BELIEF - THIS SHOULD NOT HAPPEN!!!!")
-    else:
-        post = (1.0/s) * post
-    return post
-
-
-#
-#  Pre-compute the Sensor Probability Grid
-#
-#    drow, dcol   Direction in row/col
-#    pSenDist     List of probabilities that sensor triggers at dist=(index+1)
-#    prob         Grid of probabilities that (sensor==True)
-#
-def precomputeSensorProbability(drow, dcol, pSenDist = [1.0]):
-    # Assume the probability is zero, unless updated below.
-    prob = np.zeros((rows, cols))
-
-    # Pre-compute the probability for each grid element, knowing the
-    # walls and the direction of the sensor.
-    for row in range(1, rows-1):
-        for col in range(1, cols-1):
-            # Check for a wall at multiple steps in the given delta direction.
-            for k in range(len(pSenDist)):
-                if walls[row + drow*(k+1), col + dcol*(k+1)]:
-                    prob[row, col] = pSenDist[k]
-                    break
-
-    # Return the computed grid.
-    return prob
-
+# compute where the robot is to set current position
 def computeCurrentNode(robot,nodes):
     for node in nodes:
         if node.row == robot.row and node.col == robot.col:
@@ -284,7 +200,7 @@ def main():
         
         # Check for obstacles and recalculate path if necessary.
         while planner.path and planner.path[0].type == 'obstacle':
-            print(f"Encountered obstacle at {path[0].row}, {path[0].col}, recalculating path...")
+            print(f"Encountered obstacle at {planner.path[0].row}, {planner.path[0].col}, recalculating path...")
             planner.path = planner.computePath()
             if not planner.path:
                 print("Error: No valid path found after obstacle adjustment. Exiting.")
