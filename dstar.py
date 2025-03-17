@@ -70,6 +70,8 @@ class Planner:
         
     # Run the planner.
     def computePath(self):
+        print("COMPUTE PATH RUNNING")
+        print(self.current)
         for node in self.nodes:
             node.seen = False
             node.done = False
@@ -144,18 +146,25 @@ class Planner:
         while brick:
             self.path.insert(0, brick) 
             brick = brick.parent
+        print(self.path)
         self.check_path()
+        print("CHECK")
+        print(self.path)
         return self.path
     
     # Makes sure that the path is single-step moves
     def check_path(self):
+        print("CHECK PATH RUNNING")
         if not self.path:
+            print("CHECK PATH FAILURE")
             return
 
         valid_path = [self.path[0]]  # Start with the first node.
         for i in range(1, len(self.path)):
+            print( i )
             prev_node = valid_path[-1]
             curr_node = self.path[i]
+            print(curr_node)
 
             # Compute the delta between the current and previous node.
             drow = curr_node.row - prev_node.row
@@ -171,9 +180,13 @@ class Planner:
                 if not self.walls[int_row, int_col]:
                     intermediate_node = Node(int_row, int_col)
                     valid_path.append(intermediate_node)
+                else:
+                    print("INVALID STEP")
 
             # Add the current node after all intermediate nodes.
             valid_path.append(curr_node)
 
         # Update the path to the valid path.
+        print("the valid path is")
+        print(valid_path)
         self.path = valid_path

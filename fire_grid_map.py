@@ -57,6 +57,8 @@ while len(obstacles) < 30:
         obstacles.add(pos)
 obstacles = list(obstacles)
 
+
+
 # Ensure goal is not inside a wall or in obstacles
 goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 while goal_mark in obstacles or walls[goal_mark[0], goal_mark[1]] == 1:
@@ -120,6 +122,13 @@ def getValidMove(robot, drow, dcol):
 
     return getValidDelta(drow, dcol)
 
+def establishWallsPlusObstacles(obstacles, walls):
+    obstaclesPlusWalls = walls
+    for obstacle in obstacles:
+        obstaclesPlusWalls[obstacle[0], obstacle[1]] = 1.0
+    return obstaclesPlusWalls
+
+
 # 
 #
 #  Main Code
@@ -169,7 +178,8 @@ def main():
         print("Error: No fire node found! Exiting.")
         return
      
-    planner = Planner(start, goal, walls, nodes)
+    obstaclesPlusWalls = establishWallsPlusObstacles(obstacles, walls)
+    planner = Planner(start, goal, obstaclesPlusWalls, nodes)
     
     # compute initial path, with no knowledge of fires or obstacles
     planner.path = planner.computePath()
@@ -188,7 +198,7 @@ def main():
 
     # Loop continually.
     while True:
-        # Show the current belief.  Also show the actual position.
+        # Show the current belief.  Also show the actual position
         visual.Show(np.ones(np.shape(walls)), markRobot=True)
 
         if planner.current.row == goal.row and planner.current.col == goal.col:
@@ -201,6 +211,11 @@ def main():
         # Check for obstacles and recalculate path if necessary.
         while planner.path and planner.path[0].type == 'obstacle':
             print(f"Encountered obstacle at {planner.path[0].row}, {planner.path[0].col}, recalculating path...")
+            start = computeCurrentNode(robot, nodes)
+            setFireNodes(goal_mark, nodes)
+            setObstacleNodes(obstacles, nodes)
+            obstaclesPlusWalls = establishWallsPlusObstacles(obstacles, walls)
+            planner = Planner(start, goal, obstaclesPlusWalls, nodes)
             planner.path = planner.computePath()
             if not planner.path:
                 print("Error: No valid path found after obstacle adjustment. Exiting.")
@@ -209,6 +224,7 @@ def main():
         if not planner.path:
             print("No path available. Exiting.")
             return
+
 
         # Get the next node in the path
         next_node = planner.path.pop(0)
@@ -231,9 +247,13 @@ def main():
                 # Mark the collision point as an obstacle
                 obstacle_node = Node(planner.current.row + step_drow, planner.current.col + step_dcol)
                 obstacle_node.type = 'obstacle'
-                setObstacleNodes([(obstacle_node.row, obstacle_node.col)], nodes)
+                obstacles.append((obstacle_node.row, obstacle_node.col))
+                setObstacleNodes(obstacles, nodes)
                 
                 # Recalculate the path
+                start = computeCurrentNode(robot, nodes)
+                obstaclesPlusWalls = establishWallsPlusObstacles(obstacles, walls)
+                planner = Planner(start, goal, obstaclesPlusWalls, nodes)
                 planner.path = planner.computePath()
                 if not planner.path:
                     print("Error: No valid path found after collision. Exiting.")
