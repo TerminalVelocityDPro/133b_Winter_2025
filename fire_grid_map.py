@@ -253,7 +253,7 @@ def main():
         print("Error: No fire node found! Exiting.")
         return
      
-    planner = Planner(start, goal)
+    planner = Planner(start, goal, walls, nodes)
     
     # compute initial path, with no knowledge of fires or obstacles
     planner.path = planner.computePath()
@@ -283,19 +283,19 @@ def main():
             return
         
         # Check for obstacles and recalculate path if necessary.
-        while path and path[0].type == 'obstacle':
+        while planner.path and planner.path[0].type == 'obstacle':
             print(f"Encountered obstacle at {path[0].row}, {path[0].col}, recalculating path...")
-            path = planner.computePath()
-            if not path:
+            planner.path = planner.computePath()
+            if not planner.path:
                 print("Error: No valid path found after obstacle adjustment. Exiting.")
                 return
 
-        if not path:
+        if not planner.path:
             print("No path available. Exiting.")
             return
 
         # Get the next node in the path
-        next_node = path.pop(0)
+        next_node = planner.path.pop(0)
         print(f"Moving from ({planner.current.row}, {planner.current.col}) to ({next_node.row}, {next_node.col})")
 
         # Calculate the total delta required to reach the next node
@@ -318,8 +318,8 @@ def main():
                 setObstacleNodes([(obstacle_node.row, obstacle_node.col)], nodes)
                 
                 # Recalculate the path
-                path = planner.computePath()
-                if not path:
+                planner.path = planner.computePath()
+                if not planner.path:
                     print("Error: No valid path found after collision. Exiting.")
                     return
                 
