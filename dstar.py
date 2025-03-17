@@ -62,7 +62,7 @@ class Node:
 class Planner:
     
     def __init__(self, current, goal, walls, nodes):
-        self.path = []
+        self.path = None
         self.current = current
         self.goal = goal
         self.walls = walls
