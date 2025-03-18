@@ -11,7 +11,7 @@ class Node:
         self.row = row
         self.col = col
         # initialize all nodes as clear
-        self.type = 'clear' # other options are 'fire' and 'obstacle'
+        self.type = 'clear' # other options are 'fire', 'obstacle', 'dog'
 
         # Clear the list of neighbors (used for the full graph).
         self.neighbors = []

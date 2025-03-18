@@ -47,6 +47,13 @@ def setFireNodes(goal_mark, nodes):
             print(f'Fire set successfully at: ({node.row}, {node.col})')
             walls[node.row, node.col] = 0
 
+def setDogNodes(dog_mark, nodes):
+    for node in nodes:
+        if node.row == dog_mark[0] and node.col == dog_mark[1]:
+            node.type = 'dog'
+            print(f'DOG HAS BEEN SET AT ({node.row}, {node.col})')
+            walls[node.row, node.col] = 0
+
 def connectNodes(nodes, walls):
     rows = len(walls)
     cols = len(walls[0]) if rows > 0 else 0
@@ -130,6 +137,17 @@ goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 while goal_mark in obstacles or walls[goal_mark[0], goal_mark[1]] == 1:
     goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 
+# Ensure goal is not inside a wall or in obstacles
+dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
+while dog_mark in obstacles or walls[dog_mark[0], dog_mark[1]] == 1:
+    dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
+
+print("THE GOAL MARK IS")
+print(goal_mark)
+print("THE DOG MARK IS")
+print(dog_mark)
+
+
 # 
 #
 #  Main Code
@@ -139,7 +157,7 @@ def main():
     robot=Robot(walls)
 
     # Initialize the figure.
-    visual = Visualization(walls, robot, obstacles, goal_mark)
+    visual = Visualization(walls, robot, obstacles, goal_mark, dog_mark)
     input("The empty grid")
     
     nodes = []
@@ -154,14 +172,23 @@ def main():
     start = computeCurrentNode(robot,nodes)
     # and find nearest fire to set as goal node
     setFireNodes(goal_mark, nodes)
+    setDogNodes(dog_mark, nodes)
     goal = None
+    dog_goal = None
     for node in nodes:
         if node.type == 'fire':
             print(f'Found fire node at: ({node.row}, {node.col})')
             goal = node
+        if node.type == 'dog':
+            print(f'Found dog node at: ({node.row}, {node.col})')
+            dog = node
                 
     if goal is None: 
         print("Error: No fire node found! Exiting.")
+        return
+
+    if dog is None: 
+        print("Error: No dog node found! Exiting.")
         return
      
     planner = Planner(start, goal, nodes)

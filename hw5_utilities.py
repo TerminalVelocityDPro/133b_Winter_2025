@@ -50,12 +50,12 @@ import random
 #   Probailiity Grid Visualization
 #
 class Visualization():
-    def __init__(self, walls, robot, obstacles, goal):
+    def __init__(self, walls, robot, obstacles, goal, dog):
         # Save the walls, robot, and determine the rows/cols:
         self.walls = walls
         self.original_walls = walls
-        self.fire = np.zeros(np.shape(walls)) 
         self.robot = robot
+        self.dog = dog
         self.obstacles = obstacles
         self.goal = goal
         self.tick_counter = 0
@@ -154,18 +154,16 @@ class Visualization():
             col = obstacle[1]
             self.walls[row, col] = 1.0
 
-        row = self.goal[0]
-        col = self.goal[1]
-        self.fire[row, col] = 1.0
-        
         # Create the color range.  There are clearly more elegant ways...
         color = np.ones((self.rows, self.cols, 3))
         for row in range(self.rows):
             for col in range(self.cols):
                 if self.walls[row,col]:
                     color[row,col,0:3] = np.array([0.0, 0.0, 0.0])   # Black
-                if self.fire[row,col] and not self.walls[row, col]:
+                elif self.goal[0] == row and self.goal[1] == col:
                     color[row,col,0:3] = np.array([1.0, 0.0, 0.0])
+                elif self.dog[0] == row and self.dog[1] == col:
+                    color[row,col,0:3] = np.array([0.0, 1.0, 0.0])
     
         # Draw the boxes.
         self.content = plt.gca().imshow(color,
@@ -184,6 +182,7 @@ class Visualization():
             pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
             if (self.walls[pos[0], pos[1]] == 0 and 
                 pos != self.goal and
+                pos != self.dog and
                 pos[0] != self.robot.row and
                 pos[1] != self.robot.col):  # Ensure it's not inside a wall
                 self.obstacles.add(pos)
