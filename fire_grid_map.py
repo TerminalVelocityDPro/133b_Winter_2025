@@ -181,18 +181,65 @@ def main():
             goal = node
         if node.type == 'dog':
             print(f'Found dog node at: ({node.row}, {node.col})')
-            dog = node
+            dog_goal = node
                 
     if goal is None: 
         print("Error: No fire node found! Exiting.")
         return
 
-    if dog is None: 
+    if dog_goal is None: 
         print("Error: No dog node found! Exiting.")
         return
-     
-    planner = Planner(start, goal, nodes)
     
+    # Plan a path to the dog
+    planner = Planner(start, dog_goal, nodes)
+    planner.path = planner.computePath()
+
+    if not planner.path:
+        print("Error: No valid path to the dog found! Exiting.")
+    
+    
+    while True:
+        visual.Show(np.ones(np.shape(walls)), markRobot=True)
+
+        if planner.current.row == dog_goal.row and planner.current.col == dog_goal.col:
+            print("\n**********************************************")
+            print("* You found the dog! Yay! 🎉🐕🎉              *")
+            print("* Now, let's find the fire! 🚒🚒🚒              *")
+            print("**********************************************")
+            
+            dog_goal.type = 'clear'
+            walls[dog_goal.row, dog_goal.col] = 0
+            visual.Show(np.ones(np.shape(walls)), markRobot=True)            
+            break
+
+        if planner.path is None:
+            print("Error: No valid path found. Exiting.")
+            return
+
+        if checkObstacle(obstacles,planner.path[0]):
+            setObstacle(planner.path[0])
+            planner.path = planner.computePath()
+            if not planner.path:
+                print("Error: No valid path found after obstacle adjustment. Exiting.")
+                return
+        
+
+        next_node = planner.path.pop(0)
+        print(f"Moving from ({planner.current.row}, {planner.current.col}) to ({next_node.row}, {next_node.col})")
+
+        total_drow = next_node.row - planner.current.row
+        total_dcol = next_node.col - planner.current.col
+
+        robot.Command(total_drow, total_dcol)
+        planner.current = computeCurrentNode(robot, nodes)
+        print(f'Move completed. Current position: ({planner.current.row}, {planner.current.col})')
+        input("Press Enter to move to the next step...")
+        visual.SetObstacles()
+        obstacles = visual.obstacles
+    
+    # After rescuing the dog, plan a path to the fire
+    planner = Planner(planner.current, goal, nodes)
     # compute initial path, with no knowledge of fires or obstacles
     planner.path = planner.computePath()
     

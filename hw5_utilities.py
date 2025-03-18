@@ -162,7 +162,7 @@ class Visualization():
                     color[row,col,0:3] = np.array([0.0, 0.0, 0.0])   # Black
                 elif self.goal[0] == row and self.goal[1] == col:
                     color[row,col,0:3] = np.array([1.0, 0.0, 0.0])
-                elif self.dog[0] == row and self.dog[1] == col:
+                elif self.dog is not None and self.dog[0] == row and self.dog[1] == col:
                     color[row,col,0:3] = np.array([0.0, 1.0, 0.0])
     
         # Draw the boxes.
