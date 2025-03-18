@@ -174,7 +174,7 @@ def main():
         if node.type == 'fire':
             print(f'Found fire node at: ({node.row}, {node.col})')
             goal = node
-        if node.type == 'dog':
+        elif node.type == 'dog':
             print(f'Found dog node at: ({node.row}, {node.col})')
             dog_goal = node
                 
@@ -234,7 +234,7 @@ def main():
         obstacles = visual.obstacles
     
     # After rescuing the dog, plan a path to the fire
-    planner = Planner(planner.current, goal, nodes)
+    planner.goal = goal
     # compute initial path, with no knowledge of fires or obstacles
     planner.path = planner.computePath()
     
