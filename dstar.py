@@ -77,9 +77,6 @@ class Planner:
         
     # Run the planner.
     def computePath(self):
-        print("COMPUTE PATH RUNNING")
-        print(self.current)
-        
         self.initNodes()
         # Use the goal node to initialize the on-deck queue *note D* Lite starts
         # at the goal instead of the start node
@@ -143,14 +140,11 @@ class Planner:
         while brick:
             self.path.append(brick) 
             brick = brick.parent
-        print(self.path)
         return self.path
     
     # Makes sure that the path is single-step moves
     # def check_path(self):
-        print("CHECK PATH RUNNING")
         if not self.path:
-            print("CHECK PATH FAILURE")
             return
 
         valid_path = [self.path[0]]  # Start with the first node.
@@ -174,13 +168,9 @@ class Planner:
                 if not self.walls[int_row, int_col]:
                     intermediate_node = Node(int_row, int_col)
                     valid_path.append(intermediate_node)
-                else:
-                    print("INVALID STEP")
 
             # Add the current node after all intermediate nodes.
             valid_path.append(curr_node)
 
         # Update the path to the valid path.
-        print("the valid path is")
-        print(valid_path)
         self.path = valid_path

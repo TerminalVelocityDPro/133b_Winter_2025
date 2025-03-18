@@ -53,7 +53,7 @@ class Visualization():
     def __init__(self, walls, robot, obstacles, goal, dog):
         # Save the walls, robot, and determine the rows/cols:
         self.walls = walls
-        self.original_walls = walls
+        self.original_walls = walls.copy()
         self.robot = robot
         self.dog = dog
         self.obstacles = obstacles
@@ -173,7 +173,6 @@ class Visualization():
                                         zorder=0)
     
     def SetObstacles(self):
-        self.obstacles = []
         self.walls = self.original_walls.copy() 
         self.obstacles = set()
         rows = np.size(self.walls, axis = 0)

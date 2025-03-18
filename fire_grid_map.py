@@ -51,7 +51,7 @@ def setDogNodes(dog_mark, nodes):
     for node in nodes:
         if node.row == dog_mark[0] and node.col == dog_mark[1]:
             node.type = 'dog'
-            print(f'DOG HAS BEEN SET AT ({node.row}, {node.col})')
+            print(f'Dog has been set at ({node.row}, {node.col})')
             walls[node.row, node.col] = 0
 
 def connectNodes(nodes, walls):
@@ -85,6 +85,7 @@ def getValidMove(robot, drow, dcol):
     return getValidDelta(drow, dcol)
 
 def setUpObstacles(walls):
+    print("SETTING UP OBSTACLES")
     obstacles = set()
     while len(obstacles) < 300:
         pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
@@ -141,12 +142,6 @@ while goal_mark in obstacles or walls[goal_mark[0], goal_mark[1]] == 1:
 dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 while dog_mark in obstacles or walls[dog_mark[0], dog_mark[1]] == 1:
     dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
-
-print("THE GOAL MARK IS")
-print(goal_mark)
-print("THE DOG MARK IS")
-print(dog_mark)
-
 
 # 
 #
