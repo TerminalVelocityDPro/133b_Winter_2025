@@ -241,14 +241,18 @@ def main():
                 return
         
         # Check for obstacles and recalculate path if necessary.
-        if checkObstacle(obstacles,planner.path[0]):
-            setObstacle(planner.path[0])
-            planner.path = planner.computePath()
-            if not planner.path:
-                print("Error: No valid path found after obstacle adjustment. Exiting.")
-                return
-        if clearObstacle(planner.path[0],nodes):
-            planner.path = planner.computePath()
+        try:
+            if checkObstacle(obstacles,planner.path[0]):
+                setObstacle(planner.path[0])
+                planner.path = planner.computePath()
+                if not planner.path:
+                    print("Error: No valid path found after obstacle adjustment. Exiting.")
+                    # return
+            if clearObstacle(planner.path[0],nodes):
+                planner.path = planner.computePath()
+        except: 
+            print("No path found initially.")
+
 
         if not planner.path:
             print("No path available. Exiting.")
