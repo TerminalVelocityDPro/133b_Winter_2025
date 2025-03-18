@@ -140,36 +140,3 @@ class Planner:
             self.path.append(brick) 
             brick = brick.parent
         return self.path
-    
-    # Makes sure that the path is single-step moves
-    # def check_path(self):
-        if not self.path:
-            return
-
-        valid_path = [self.path[0]]  # Start with the first node.
-        for i in range(1, len(self.path)):
-            print( i )
-            prev_node = valid_path[i-1] # changed this from [-1]
-            curr_node = self.path[i]
-            print(curr_node)
-
-            # Compute the delta between the current and previous node.
-            drow = curr_node.row - prev_node.row
-            dcol = curr_node.col - prev_node.col
-
-            # Ensure the move is a single-step move.
-            steps = max(abs(drow), abs(dcol))  # Number of intermediate steps needed.
-            for step in range(1, steps + 1):
-                int_row = prev_node.row + (step * (1 if drow > 0 else -1 if drow < 0 else 0))
-                int_col = prev_node.col + (step * (1 if dcol > 0 else -1 if dcol < 0 else 0))
-
-                # Ensure the intermediate node is valid (not a wall or obstacle).
-                if not self.walls[int_row, int_col]:
-                    intermediate_node = Node(int_row, int_col)
-                    valid_path.append(intermediate_node)
-
-            # Add the current node after all intermediate nodes.
-            valid_path.append(curr_node)
-
-        # Update the path to the valid path.
-        self.path = valid_path

@@ -39,6 +39,23 @@ def setObstacle(node):
         if node in neighbor.neighbors:
             neighbor.neighbors.remove(node)
     node.neighbors.clear()  # Clear the obstacle's neighbors
+    
+def clearObstacle(node, nodes):
+    clearObstacle = False
+    row, col = node.row, node.col
+    # Only connect to adjacent nodes (single-step moves)
+    for drow, dcol in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+        nrow, ncol = row + drow, col + dcol
+        # Check if the neighbor is within bounds and not a wall
+        if 0 <= nrow < rows and 0 <= ncol < cols and not walls[nrow, ncol]:
+            # Find the neighbor node
+            neighbor = next((n for n in nodes if n.row == nrow and n.col == ncol), None)
+            if neighbor:
+                if neighbor.type == 'obstacle' and not checkObstacle(neighbor):
+                    neighbor.type = 'clear'
+                    node.neighbors.append(neighbor)
+                    clearObstacle = True
+    return clearObstacle
             
 def setFireNodes(goal_mark, nodes):
     for node in nodes: 
@@ -229,7 +246,9 @@ def main():
             planner.path = planner.computePath()
             if not planner.path:
                 print("Error: No valid path found after obstacle adjustment. Exiting.")
-                return 
+                return
+        if clearObstacle(planner.path[0],nodes):
+            planner.path = planner.computePath()
 
         if not planner.path:
             print("No path available. Exiting.")
