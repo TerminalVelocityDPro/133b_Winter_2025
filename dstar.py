@@ -19,7 +19,6 @@ class Node:
         # Clear the parent (used for the search tree), as well as the
         # actual cost to reach (via the parent).
         self.parent = None      # No parent
-        self.child = None       # and no child
         # introduce variable to store the cost to reach the node so far
         # (excluding the estimated cost)
         self.cost2Reach = inf   # Unable to reach = infinite cost
