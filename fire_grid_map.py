@@ -77,11 +77,14 @@ def getValidMove(robot, drow, dcol):
 
     return getValidDelta(drow, dcol)
 
-def establishWallsPlusObstacles(obstacles, walls):
-    obstaclesPlusWalls = walls
-    for obstacle in obstacles:
-        obstaclesPlusWalls[obstacle[0], obstacle[1]] = 1.0
-    return obstaclesPlusWalls
+def setUpObstacles(walls):
+    obstacles = set()
+    while len(obstacles) < 300:
+        pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
+        if walls[pos[0], pos[1]] == 0:  # Ensure it's not inside a wall
+            obstacles.add(pos)
+    obstacles = list(obstacles)
+    return obstacles
 
 # Now, we set up the visualization
 #
@@ -120,12 +123,7 @@ rows  = np.size(walls, axis=0)
 cols  = np.size(walls, axis=1)
 
 # Ensure unique and valid obstacle placement
-obstacles = set()
-while len(obstacles) < 30:
-    pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
-    if walls[pos[0], pos[1]] == 0:  # Ensure it's not inside a wall
-        obstacles.add(pos)
-obstacles = list(obstacles)
+obstacles = setUpObstacles(walls)
 
 # Ensure goal is not inside a wall or in obstacles
 goal_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
@@ -137,7 +135,7 @@ while goal_mark in obstacles or walls[goal_mark[0], goal_mark[1]] == 1:
 #  Main Code
 #
 def main():
-
+    global obstacles
     robot=Robot(walls)
 
     # Initialize the figure.
@@ -215,9 +213,10 @@ def main():
         # Move the robot
         robot.Command(total_drow, total_dcol)
         planner.current = computeCurrentNode(robot, nodes)
-
         print(f'Move completed. Current position: ({planner.current.row}, {planner.current.col})')
         input("Press Enter to move to the next step...")
+        visual.SetObstacles()
+        obstacles = visual.obstacles
 
 if __name__== "__main__":
     main()

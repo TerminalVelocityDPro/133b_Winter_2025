@@ -44,6 +44,8 @@ import numpy as np
 import random
 
 
+
+
 #
 #   Probailiity Grid Visualization
 #
@@ -51,6 +53,7 @@ class Visualization():
     def __init__(self, walls, robot, obstacles, goal):
         # Save the walls, robot, and determine the rows/cols:
         self.walls = walls
+        self.original_walls = walls
         self.fire = np.zeros(np.shape(walls)) 
         self.robot = robot
         self.obstacles = obstacles
@@ -170,6 +173,21 @@ class Visualization():
                                         interpolation='none',
                                         extent=[0, self.cols, self.rows, 0],
                                         zorder=0)
+    
+    def SetObstacles(self):
+        self.obstacles = []
+        self.walls = self.original_walls.copy() 
+        self.obstacles = set()
+        rows = np.size(self.walls, axis = 0)
+        cols = np.size(self.walls, axis = 1)
+        while len(self.obstacles) < 300:
+            pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
+            if (self.walls[pos[0], pos[1]] == 0 and 
+                pos != self.goal and
+                pos[0] != self.robot.row and
+                pos[1] != self.robot.col):  # Ensure it's not inside a wall
+                self.obstacles.add(pos)
+        self.obstacles = list(self.obstacles)
 
     def Show(self, prob = None, markRobot = False):
         # Update the content.
