@@ -87,19 +87,6 @@ def connectNodes(nodes, walls):
                 neighbor = next((n for n in nodes if n.row == nrow and n.col == ncol), None)
                 if neighbor:
                     node.neighbors.append(neighbor)
-                    # Ensure the delta values (drow, dcol) are valid (between -1, 0, or 1).
-
-def getValidDelta(drow, dcol):
-    # Clamp drow and dcol to valid range [-1, 1]
-    return max(-1, min(1, drow)), max(-1, min(1, dcol))
-
-def getValidMove(robot, drow, dcol):
-    # Check for walls/obstacles at the intended position
-    if walls[robot.row + drow, robot.col + dcol] == 1:
-        print(f"Collision detected at ({robot.row + drow}, {robot.col + dcol}). Skipping move.")
-        return 0, 0  # Skip move if the target position is a wall
-
-    return getValidDelta(drow, dcol)
 
 def setUpObstacles(walls):
     print("SETTING UP OBSTACLES")
