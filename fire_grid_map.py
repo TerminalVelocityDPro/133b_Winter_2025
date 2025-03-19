@@ -203,6 +203,8 @@ def main():
     connectNodes(nodes, walls)
     # get starting position
     start = computeCurrentNode(robot,nodes)
+    print("THE START OF ROBOT's PARENT")
+    print(start.parent)
     # and find nearest fire to set as goal node
     setFireNodes(goal_mark, nodes)
     setDogNodes(dog_mark, nodes)
@@ -214,6 +216,9 @@ def main():
     planner.path = planner.computePath()
 
     if not planner.path:
+        planner.path = planner.computePath()
+        print("TRY FINDING THE PATH AGAIN")
+        print(planner.path)
         print("Error: No valid path to the dog found! Exiting.")
      
     # Loop continually.

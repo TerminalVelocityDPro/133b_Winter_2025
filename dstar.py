@@ -33,7 +33,7 @@ class Node:
 
     # Define the Chebyshev distance to another node.
     def distance(self, other):
-        return max(abs(self.row - other.row),abs(self.col - other.col))
+        return int(max(abs(self.row - other.row),abs(self.col - other.col)))
 
     # Define the "less-than" to enable sorting by cost.
     def __lt__(self, other):
@@ -76,7 +76,6 @@ class Planner:
         
     # Run the planner.
     def computePath(self):
-        print("THE CURRENT PATH IS")
         self.initNodes()
         # Use the goal node to initialize the on-deck queue *note D* Lite starts
         # at the goal instead of the start node
@@ -100,7 +99,12 @@ class Planner:
                 # return None
 
             # Grab the next state (first on the storted on-deck list).
+            print(f"THE CURRENT NODE IS {self.current.row} and {self.current.col}")
+            print(f"THE GOAL NODE IS {self.goal.row} and {self.goal.col}")
+            print(f"the queue is {onDeck}")
             node = onDeck.pop(0)
+            print(f"the node is {node}")
+            print(f"the node's neighbors is {node.neighbors}")
 
             ####################
             
@@ -108,8 +112,11 @@ class Planner:
             if node == self.current:
                 print("SEARCH STOPPED")
                 break
-            
+
             for neighbor in node.neighbors:
+                print("THE NEIGHBOR IS ")
+                print(neighbor)
+                print(neighbor.cost)
                 # check that neighbor has not already been done
                 if not neighbor.done:
                     # determines if move is diagonal
@@ -118,13 +125,15 @@ class Planner:
                     move_cost = math.sqrt(2) if drow == 1 and dcol == 1 else 1
                     
                     # compute cost to get to neighbor from current node
-                    tempcost2Reach = node.cost2Reach + move_cost
+                    tempcost2Reach = int(node.cost2Reach + move_cost)
                     # compute estimated cost to reach goal from current node
                     cost2Go = neighbor.distance(self.current)
                     # and create estimated total cost
                     totalCost = tempcost2Reach + cost2Go
                     # check if this is the optimal cost and update accordingly
-                    if totalCost < neighbor.cost:
+                    print("THE TOTAL COST IS ")
+                    print(totalCost)
+                    if totalCost <= neighbor.cost:
                         neighbor.cost2Reach = tempcost2Reach
                         neighbor.cost = totalCost
                         # update parent for finding path later
@@ -137,14 +146,16 @@ class Planner:
                             neighbor.seen = True
                         # lastly, insert the neighbor into the list
                         bisect.insort(onDeck,neighbor)
+                else:
+                    print("DONE")
             # mark node as done to avoid repeats
             node.done = True
         
         # now, construct path to return by working backwards from the goal
         self.path = []
         brick = self.current.parent
-        print("BRICK's PARENT")
-        print(brick.parent)
+        # print("BRICK's PARENT")
+        # print(brick.parent)
         while brick:
             self.path.append(brick) 
             brick = brick.parent
