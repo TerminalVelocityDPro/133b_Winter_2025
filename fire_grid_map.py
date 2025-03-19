@@ -188,6 +188,10 @@ def main():
     # Initialize the figure.
     visual = Visualization(walls, robot, obstacles, goal_mark, dog_mark)
     input("The empty grid")
+
+    print("THE ROBOT STARTING POSITION")
+    print(robot.row)
+    print(robot.col)
     
     nodes = []
     for row in range(rows):

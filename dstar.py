@@ -76,6 +76,7 @@ class Planner:
         
     # Run the planner.
     def computePath(self):
+        print("THE CURRENT PATH IS")
         self.initNodes()
         # Use the goal node to initialize the on-deck queue *note D* Lite starts
         # at the goal instead of the start node
@@ -85,12 +86,18 @@ class Planner:
         self.goal.parent = None
         onDeck = [self.goal]
 
+        print("Deck")
+        print(onDeck)
+
         # Continually expand/build the search tree.
         print("Starting the processing...")
         while True:
+            # print(self.path)
             # Check that priority queue isn't empty
             if not onDeck:
-                return None
+                print("NO PRIORITY QUEUE")
+                break
+                # return None
 
             # Grab the next state (first on the storted on-deck list).
             node = onDeck.pop(0)
@@ -99,12 +106,12 @@ class Planner:
             
             # stop search if path to start is found
             if node == self.current:
+                print("SEARCH STOPPED")
                 break
             
             for neighbor in node.neighbors:
                 # check that neighbor has not already been done
                 if not neighbor.done:
-                    
                     # determines if move is diagonal
                     drow = abs(neighbor.row - node.row)
                     dcol = abs(neighbor.col - node.col)
@@ -136,7 +143,12 @@ class Planner:
         # now, construct path to return by working backwards from the goal
         self.path = []
         brick = self.current.parent
+        print("BRICK's PARENT")
+        print(brick.parent)
         while brick:
             self.path.append(brick) 
             brick = brick.parent
+
+        print("THE COMPUTED PATH IS:")
+        print(self.path)
         return self.path
