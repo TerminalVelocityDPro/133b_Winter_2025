@@ -85,9 +85,6 @@ class Planner:
         self.goal.parent = None
         onDeck = [self.goal]
 
-        print("Deck")
-        print(onDeck)
-
         # Continually expand/build the search tree.
         print("Starting the processing...")
         while True:
@@ -99,12 +96,7 @@ class Planner:
                 # return None
 
             # Grab the next state (first on the storted on-deck list).
-            print(f"THE CURRENT NODE IS {self.current.row} and {self.current.col}")
-            print(f"THE GOAL NODE IS {self.goal.row} and {self.goal.col}")
-            print(f"the queue is {onDeck}")
             node = onDeck.pop(0)
-            print(f"the node is {node}")
-            print(f"the node's neighbors is {node.neighbors}")
 
             ####################
             
@@ -114,9 +106,6 @@ class Planner:
                 break
 
             for neighbor in node.neighbors:
-                print("THE NEIGHBOR IS ")
-                print(neighbor)
-                print(neighbor.cost)
                 # check that neighbor has not already been done
                 if not neighbor.done:
                     # determines if move is diagonal
@@ -131,8 +120,6 @@ class Planner:
                     # and create estimated total cost
                     totalCost = tempcost2Reach + cost2Go
                     # check if this is the optimal cost and update accordingly
-                    print("THE TOTAL COST IS ")
-                    print(totalCost)
                     if totalCost <= neighbor.cost:
                         neighbor.cost2Reach = tempcost2Reach
                         neighbor.cost = totalCost
@@ -147,7 +134,7 @@ class Planner:
                         # lastly, insert the neighbor into the list
                         bisect.insort(onDeck,neighbor)
                 else:
-                    print("DONE")
+                    continue
             # mark node as done to avoid repeats
             node.done = True
         

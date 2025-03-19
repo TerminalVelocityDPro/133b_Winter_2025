@@ -54,6 +54,7 @@ def clearObstacle(node, nodes):
                 if neighbor.type == 'obstacle' and not checkObstacle(neighbor):
                     neighbor.type = 'clear'
                     node.neighbors.append(neighbor)
+                    neighbor.neighbors.append(node)
                     clearObstacle = True
     return clearObstacle
             
@@ -89,7 +90,6 @@ def connectNodes(nodes, walls):
                     node.neighbors.append(neighbor)
 
 def setUpObstacles(walls):
-    print("SETTING UP OBSTACLES")
     obstacles = set()
     while len(obstacles) < 300:
         pos = (random.randint(1, rows - 2), random.randint(1, cols - 2))
@@ -115,35 +115,35 @@ def setGoal(nodes):
         return
     return goal
 
-# Now, we set up the visualization
+# First, we set up the visualization
 #
 # Define the Walls
 #
 w = ['xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'x                                               x',
-     'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx']
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'x                                               x',
+    'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx']
 
 walls = np.array([[1.0*(c == 'x') for c in s] for s in w])
 # print(walls)
@@ -164,22 +164,18 @@ dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 while dog_mark in obstacles or walls[dog_mark[0], dog_mark[1]] == 1:
     dog_mark = (random.randint(1, rows - 2), random.randint(1, cols - 2))
 
+robot=Robot(walls, obstacles)
+
+# Initialize the figure.
+visual = Visualization(walls, robot, obstacles, goal_mark, dog_mark)
+input("The empty grid")
+
 # 
 #
 #  Main Code
 #
 def main():
     global obstacles
-    robot=Robot(walls)
-
-    # Initialize the figure.
-    visual = Visualization(walls, robot, obstacles, goal_mark, dog_mark)
-    input("The empty grid")
-
-    print("THE ROBOT STARTING POSITION")
-    print(robot.row)
-    print(robot.col)
-    
     nodes = []
     for row in range(rows):
         for col in range(cols):
@@ -190,8 +186,6 @@ def main():
     connectNodes(nodes, walls)
     # get starting position
     start = computeCurrentNode(robot,nodes)
-    print("THE START OF ROBOT's PARENT")
-    print(start.parent)
     # and find nearest fire to set as goal node
     setFireNodes(goal_mark, nodes)
     setDogNodes(dog_mark, nodes)
@@ -237,17 +231,15 @@ def main():
                 return
         
         # Check for obstacles and recalculate path if necessary.
-        try:
-            if checkObstacle(obstacles,planner.path[0]):
-                setObstacle(planner.path[0])
-                planner.path = planner.computePath()
-                if not planner.path:
-                    print("Error: No valid path found after obstacle adjustment. Exiting.")
-                    # return
-            if clearObstacle(planner.path[0],nodes):
-                planner.path = planner.computePath()
-        except: 
-            print("No path found initially.")
+        if checkObstacle(obstacles,planner.path[0]):
+            setObstacle(planner.path[0])
+            planner.path = planner.computePath()
+            if not planner.path:
+                print("Error: No valid path found after obstacle adjustment. Exiting.")
+                # return
+        if clearObstacle(planner.path[0],nodes):
+            planner.path = planner.computePath()
+
 
 
         if not planner.path:
@@ -256,7 +248,6 @@ def main():
 
         # Get the next node in the path
         next_node = planner.path.pop(0)
-        print(f"Moving from ({planner.current.row}, {planner.current.col}) to ({next_node.row}, {next_node.col})")
 
         # Calculate the total delta required to reach the next node
         total_drow = next_node.row - planner.current.row

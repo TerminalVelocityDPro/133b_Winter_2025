@@ -146,13 +146,13 @@ class Visualization():
             self.content = None
 
 
-        for obstacle in self.obstacles:
-            # print(obstacle)
-            # print(point_index)
-            # print(obstacle[point_index])
-            row = obstacle[0]
-            col = obstacle[1]
-            self.walls[row, col] = 1.0
+        # for obstacle in self.obstacles:
+        #     # print(obstacle)
+        #     # print(point_index)
+        #     # print(obstacle[point_index])
+        #     row = obstacle[0]
+        #     col = obstacle[1]
+        #     self.walls[row, col] = 1.0
 
         # Create the color range.  There are clearly more elegant ways...
         color = np.ones((self.rows, self.cols, 3))
@@ -164,6 +164,9 @@ class Visualization():
                     color[row,col,0:3] = np.array([1.0, 0.0, 0.0])
                 elif self.dog is not None and self.dog[0] == row and self.dog[1] == col:
                     color[row,col,0:3] = np.array([0.0, 1.0, 0.0])
+                for obstacle in self.obstacles:
+                    if obstacle[0] == row and obstacle[1] == col:
+                        color[row,col,0:3] = np.array([0.0, 0.0, 0.0])   # Black
     
         # Draw the boxes.
         self.content = plt.gca().imshow(color,
@@ -210,7 +213,7 @@ class Visualization():
 #    kidnap: Flag whether to kidnap the robot (sometime in 10-15th move).
 #
 class Robot():
-    def __init__(self, walls, row = 0, col = 0,
+    def __init__(self, walls, obstacles, row = 0, col = 0,
                  pSensor = [1.0], pCommand = 1.0, kidnap = False):
         # Check the row/col arguments.
         assert (row >= 0) and (row < np.size(walls, axis=0)), "Illegal row"
@@ -230,6 +233,7 @@ class Robot():
         self.walls    = walls
         self.pCommand = pCommand
         self.pSensor  = pSensor
+        self.obstacles = obstacles
         if kidnap:
             self.countdown = random.randrange(10, 15)
         else:
@@ -240,7 +244,7 @@ class Robot():
 
     def JumpTo(self, row, col):
         # If invalid, randomize until we have a valid location.
-        while self.walls[row, col]:
+        while self.walls[row, col] or ((row,col) in self.obstacles):
             row = random.randrange(0, np.size(self.walls, axis=0))
             col = random.randrange(0, np.size(self.walls, axis=1))
         # Set the location.
